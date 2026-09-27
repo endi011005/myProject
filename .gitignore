@@ -1,0 +1,25 @@
+# LaTeX build artifacts / temporary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.toc
+*.out
+*.synctex.gz
+*.log
+*.fdb_latexmk
+*.fls
+*.acn
+*.acr
+*.alg
+*.glo
+*.gls
+*.ist
+*.lof
+*.lot
+*.lol
+
+# IDE specific files
+.vscode/*
+!.vscode/settings.json
