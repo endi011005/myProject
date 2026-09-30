@@ -54,7 +54,7 @@
 \let\cleardoublepage\clearpage
 
 % --- GÓI QUẢN LÝ TÀI LIỆU THAM KHẢO ---
-\usepackage[backend=biber, style=ieee, sorting=ynt, sortcites=true]{biblatex}
+\usepackage[backend=biber, style=ieee, sorting=none, sortcites=true]{biblatex}
 \addbibresource{references/reference.bib}
 
 % --- CÂN CHỈNH KHOẢNG CÁCH CHỮ VÀ ĐOẠN VĂN ---
@@ -74,6 +74,7 @@
 }
 
 \begin{document}
+\nocite{*}
 	
 	% ========== FRONT MATTER ==========
 	\frontmatter
