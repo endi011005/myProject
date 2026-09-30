@@ -1,38 +1,74 @@
 %!TEX root = ../../main.tex
 \chapter{Introduction}
 \section{Background}
-The explosive growth of the Internet of Things (IoT) has led to the connection of billions of devices, continuously generating massive amounts of data. However, data processing at the edge (Edge Computing) faces significant challenges due to hardware limitations \cite{shi2016}. A specific characteristic of most IoT devices is their severe constraints in computational capabilities, storage space, and battery power \cite{imteaj2022}.
-In this context, Intrusion Detection Systems (IDS) play a pivotal role in monitoring traffic and protecting networks from cybersecurity risks, especially complex attacks. Recently, Federated Learning (FL) has emerged as an ideal decentralized solution. This approach allows multiple devices to collaboratively train a machine learning model without sharing raw data, thereby resolving data privacy issues and minimizing communication costs.
+The widespread adoption of the Internet of Things (IoT) has connected billions of devices, generating massive amounts of data to serve automation services in smart environments, healthcare, and transportation \cite{atzori2010}. However, Edge Computing faces significant challenges due to the hardware limitations of IoT devices in terms of computational capacity, storage space, and energy \cite{shi2016, imteaj2022}. In this context, Intrusion Detection Systems (IDS) play a pivotal role in monitoring traffic and protecting networks from cybersecurity risks. Specifically, the MQTT (Message Queuing Telemetry Transport) protocol, which supports lightweight publish-subscribe messaging, may be targeted denial-of-service (DoS/DDoS) attacks. The use of the DoS/DDoS-MQTT-IoT dataset provides an important practical foundation for studying these threats \cite{alatram2023}.
 
+To address security risks without compromising privacy, Federated Learning (FL) is a decentralized solution, allowing multiple devices to collaboratively train a model without sharing raw data \cite{mcmahan2017}. Nevertheless, the effectiveness of IDS heavily depends on the characteristics of the training data; especially the class balance of the data \cite{he2009}.
+
+\clearpage
 \section{Problem Statement}
-Despite providing an effective distributed solution, deploying IDS in real-world IoT environments via Federated Learning still encounters core challenges. The first is the risk of privacy leakage and the lack of secure encryption mechanisms during transmission: During the transmission of weights or gradients between devices, users' sensitive information remains at risk of leakage \cite{mothukuri2021}, enabling attackers to reconstruct the original data \cite{wei2021} and execute Model Inversion Attacks \cite{li2022}.
-The second is the Data Imbalance problem: In IoT network traffic, normal data accounts for an overwhelming proportion, while attack traffic samples are highly rare. Practical evidence from the UNSW-NB15 dataset shows that there are up to 1,064,987 normal samples but only 22,215 attack samples \cite{moustafa2015}. This severe imbalance degrades IDS accuracy \cite{aguiar2024} and directly hinders the feature extraction performance of deep learning models \cite{zhang2025}.
-The third is the limitation regarding the computational costs of current data generation solutions. Although data generation techniques like Generative Adversarial Networks (GANs), typically WGAN-GP, have been proven capable of generating high-quality synthetic data \cite{bouzeraib2025}, they require excessively heavy and complex computational costs. This creates a significant barrier when deploying on IoT devices that are already constrained in resources.
+Although Federated Learning provides an effective distributed solution, deploying IDS in real-world IoT environments still encounters three core challenges:
 
+First is the risk of privacy leakage during weight transmission. Model transmission can leak sensitive user information, allowing attackers to reconstruct the original data \cite{zhu2019,mothukuri2021,wei2021,li2022}. Therefore, keeping raw data local is not enough; the system requires rigorous protection mechanisms such as Differential Privacy (DP) \cite{dwork2006} or Secure Aggregation (SecAgg) \cite{bonawitz2017}.
+
+Second is the severe data imbalance problem in IoT network traffic. Normal data always overwhelmingly outnumbers attack samples, as practically observed in the UNSW-NB15 dataset \cite{moustafa2015}. This imbalance reduces the accuracy of IDS and hinders the feature learning capability of classification models \cite{aguiar2024,zhang2025}. The shortage of minority attack samples requires data generation techniques for support.
+
+Third is the limitation regarding the computational cost of current data generation solutions. Although data generation techniques like GANs (especially WGAN-GP) can generate high-quality synthetic data, they require complex computational costs, creating a major barrier when deployed on resource-constrained IoT devices \cite{bouzeraib2025}. This poses a need for a more lightweight generative model, such as the Conditional Variational Autoencoder (CVAE), to generate balanced data without exhausting system resources \cite{sohn2015}.
+
+\clearpage
 \section{Research Objectives}
 To address the aforementioned limitations, this research proposes a comprehensive framework with the following specific objectives:
-Deploy two independent architectural pipelines in parallel within a Federated Learning environment (CVAE + FL + Differential Privacy and CVAE + FL + Secure Aggregation) for comparison and contrast, aiming to find the perfect balance between data quality, privacy, and hardware resource optimization.
-Integrate advanced secure computation methods, namely Secure Aggregation or Differential Privacy, into the weight transmission process to overcome the lack of secure transmission mechanisms in previous studies and defend against data leakage attacks.
-The FL model will integrate the CVAE (Conditional Variational Autoencoder) model to replace computationally heavy algorithms like WGAN-GP, aiming to generate synthetic attack data to help balance the dataset for the minority class, optimized for tabular data, thereby enhancing the performance of the IDS.
+\begin{itemize}
+    \item Preprocess the selected DoS/DDoS-MQTT-IoT dataset and prepare it for federated training, including feature preparation, label processing, and examination of class distributions. Establish the global model and optimize the relevant hyperparameters at the global level before distributing the selected training configuration and required initialization parameters to the clients.
+    \item Design and implement two federated CVAE configurations: one incorporating Differential Privacy and the other incorporating Secure Aggregation. Keep the shared experimental conditions consistent where applicable to support a meaningful comparison.
+    \item Implement the federated training workflow in which clients train the CVAE locally using the configuration received from the global server, transmit the required updates through the selected privacy-preserving mechanism, and participate in global model aggregation across training rounds.
+    \item Use the trained global CVAE model to generate synthetic MQTT traffic samples conditioned on the target classes, with particular attention to underrepresented attack classes where such imbalance is observed in the prepared data.
+    \item Evaluate the generated data using appropriate data-quality measures and downstream machine learning-based IDS experiments. Examine whether the synthetic samples provide useful support for attack detection, and compare the two configurations in terms of data quality, IDS utility, privacy-related properties, and computational or communication overhead.
+\end{itemize}
 
+\clearpage
 \section{Significance of the Study}
-This research holds significant importance in simultaneously addressing two difficult problems in IoT network security: data quality and privacy. By integrating data generation to balance the minority class using a cost-optimized algorithm and applying a distributed training model accompanied by strict security mechanism options (Differential Privacy or Secure Aggregation), this project provides a comprehensive IDS solution that completely protects sensitive information before data is aggregated.
+This study investigates the integration of CVAE-based synthetic data generation, Federated Learning, and privacy-preserving mechanisms for MQTT-based IoT attack detection. Its significance is considered in research, technical, and practical contexts.
 
+From a research perspective, the study examines a specific application of federated synthetic data generation in which MQTT DoS/DDoS traffic is the target data. It brings together related research directions that have often been investigated using different generative architectures, datasets, or objectives. By considering the two configurations, CVAE + FL + DP and CVAE + FL + SecAgg, the study provides an experimental basis for analyzing how their design choices relate to generated-data utility and system overhead. The results are intended to add application-specific evidence rather than claim a universally superior privacy mechanism.
+
+From a technical perspective, PP-FedData defines a workflow that includes dataset preparation, global configuration and hyperparameter optimization, client-side CVAE training, federated aggregation, and synthetic data generation. Establishing the global training configuration before distributing it to clients provides a consistent starting point for local training. Implementing DP and SecAgg as separate configurations also makes it possible to study their distinct roles and costs within the same general framework. The actual benefits and limitations of these design choices remain subject to experimental findings.
+
+From a practical perspective, synthetic attack traffic may provide additional training examples when certain classes are insufficiently represented. If the generated samples preserve relevant traffic characteristics and improve downstream IDS performance, they may help address data availability challenges in the investigated setting. The evaluation of privacy-related properties and resource overhead can also inform whether the proposed approach is suitable for further development. However, the study does not assume that synthetic data can replace real traffic or that the framework is immediately deployable on resource-constrained IoT devices.
+
+Overall, the study aims to provide an experimentally grounded assessment of a CVAE-based federated data generation workflow and its trade-offs for MQTT attack detection.
+
+\clearpage
 \section{Scope and Limitations}
+This research focuses on the design, implementation, and experimental evaluation of PP-FedData for synthetic data generation and DoS/DDoS attack detection in MQTT-based IoT environments. The scope is defined as follows:
 \begin{itemize}
-\item \textbf{Scope:} The project focuses on processing within an IDS in an IoT environment, specifically limiting the in-depth scope to attack vectors over the MQTT protocol (DoS/DDoS). The generation of balanced data is performed through the CVAE model combined with a distributed Federated Learning architecture. The experimental data uses the CICIoT2023 dataset combined with an enterprise-simulated IoT network dataset collected and refined by the team.
-
-\item \textbf{Limitations:} Secure computation and synthetic data generation mechanisms require a certain amount of resources; therefore, they may face challenges when deployed on resource-constrained IoT devices \cite{imteaj2022}.
-
+    \item Application domain: MQTT-based IoT network traffic, with an emphasis on DoS/DDoS attack detection.
+    \item Dataset: The selected DoS/DDoS-MQTT-IoT dataset is used as the primary experimental data source. The data are processed into the representation required by the proposed model and evaluation pipeline.
+    \item Generative model: CVAE is used to learn conditional patterns in the prepared tabular traffic data and generate synthetic samples for selected classes.
+    \item Federated architecture: The study uses a server-client FL workflow. The global model configuration and selected hyperparameters are established and optimized at the global level before being distributed to clients for local training.
+    \item Privacy-preserving configurations: Two configurations are investigated independently: CVAE + FL + DP and CVAE + FL + SecAgg.
+    \item Evaluation: The evaluation covers generated-data quality, downstream IDS performance, and the computational and communication costs observed in the experimental environment.
 \end{itemize}
 
+\clearpage
+\markright{1.5. Scope and Limitations}
+The findings of this study should be interpreted in light of the following limitations:
+\begin{itemize}
+    \item Dataset and protocol coverage: The study focuses on a single MQTT DoS/DDoS dataset. The results may not generalize to other IoT protocols, deployment environments, or attack categories without additional experiments.
+    \item Dependence on data and configuration: Synthetic data quality depends on the selected dataset, preprocessing, CVAE architecture, hyperparameters, client partitioning, and training procedure. Generated samples may not capture every characteristic of real network traffic.
+    \item Privacy assumptions: The privacy properties of DP depend on the formal mechanism, privacy parameters, and neighboring-data definition. SecAgg depends on its protocol assumptions and protects individual updates during aggregation, but does not by itself establish differential privacy for the aggregate output. The study therefore does not claim complete protection against all privacy attacks.
+    \item Computational resources: CVAE training, federated communication, and privacy-preserving operations may incur additional resource costs. The feasibility of deploying the complete framework directly on low-power IoT devices is outside the conclusions that can be drawn without device-level evaluation.
+    \item Experimental validity: Results depend on the chosen software, hardware, data partitions, hyperparameter selection procedure, and evaluation metrics. Further validation with additional datasets and deployment settings is needed before generalizing the findings.
+\end{itemize}
+
+\clearpage
 \section{Thesis Structure}
+The remainder of this thesis is structured into six chapters as follows:
 \begin{itemize}
-    \item \textbf{Chapter 1: Introduction:} Presents the project's background, objectives, research scope, and the structure of the thesis.
-    \item \textbf{Chapter 2: Literature Review:} Evaluates existing studies and demonstrates how this thesis fits into the broader academic context.
-    \item \textbf{Chapter 3: Methodology:} Details the research design, data collection methods, and modeling techniques.
-    \item \textbf{Chapter 4: Experimental and Results:} Provides a concise and precise description of the experimental results and system evaluations.
-    \item \textbf{Chapter 5: Discussion:} Discusses and interprets the significance of the findings from the experimental results in a practical context.
-    \item \textbf{Chapter 6: Conclusion and Future Work:} Summarizes the main contributions and proposes future research directions.
+    \item \textbf{Chapter 1: Introduction:} Outlines the background, problem, objectives, significance, scope, and structure of the study.
+    \item \textbf{Chapter 2: Literature Review:} Reviews relevant studies and identifies the research gap and the position of this study in the existing literature.
+    \item \textbf{Chapter 3: Methodology:} Details dataset preparation, global hyperparameter optimization, CVAE-FL training with DP or SecAgg, and evaluation methods.
+    \item \textbf{Chapter 4: Experimental and Results:} Describes the experimental setup and reports synthetic-data, IDS, and system overhead results.
+    \item \textbf{Chapter 5: Discussion:} Interprets the findings, examines the observed trade-offs, and discusses the limitations and implications of the study.
+    \item \textbf{Chapter 6: Conclusion and Future Work:} Summarizes the conclusions and outlines directions for further research.
 \end{itemize}
-

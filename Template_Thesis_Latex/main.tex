@@ -54,8 +54,15 @@
 \let\cleardoublepage\clearpage
 
 % --- GÓI QUẢN LÝ TÀI LIỆU THAM KHẢO ---
-\usepackage[backend=biber, style=ieee]{biblatex}
+\usepackage[backend=biber, style=ieee, sorting=ynt, sortcites=true]{biblatex}
 \addbibresource{references/reference.bib}
+
+% --- CÂN CHỈNH KHOẢNG CÁCH CHỮ VÀ ĐOẠN VĂN ---
+\usepackage{microtype} % Tự động tối ưu khoảng cách chữ (kerning), chống giãn dòng và tràn lề
+\usepackage{enumitem}  % Đồng đều khoảng cách các mục gạch đầu dòng (itemize)
+\setlist[itemize]{label=\textbullet, itemsep=4pt, topsep=4pt, parsep=0pt, partopsep=0pt}
+\setlength{\parskip}{6pt plus 1pt minus 1pt} % Khoảng cách đều giữa các đoạn văn
+\setlength{\parindent}{1.5em}               % Thụt đầu dòng chuẩn 1.5em cho mỗi đoạn
 
 % --- GÓI TẠO LIÊN KẾT CLICK (PHẢI ĐẶT SAU CÙNG TRONG PREAMBLE) ---
 \usepackage{hyperref}
@@ -72,8 +79,8 @@
 	\frontmatter
 	
 	% Dùng \input thay vì \include
-	\include{chapters/front/head.tex}
-	\include{chapters/front/thanks.tex}
+	\input{chapters/front/head.tex}
+	\input{chapters/front/thanks.tex}
 	\tableofcontents
 	\clearpage
 	\listoffigures
