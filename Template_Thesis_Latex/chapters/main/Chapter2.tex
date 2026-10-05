@@ -2,5 +2,87 @@
 \chapter{Literature Review}
 Reviews relevant existing research and demonstrates how your thesis fits into the broader academic conversation.
 \section{Review of Previous Studies}
+
+\subsection{Overview of Privacy-Preserving Mechanisms in Federated Learning}
+
+\subsubsection*{Overall Landscape and Scope of Research}
+The integration of Federated Learning (FL) into Intrusion Detection Systems (IDS) for IoT environments has resolved the issue of raw data centralization, yet the model weight sharing process itself still harbors data leakage risks~\cite{vyas2024}. To counter this, current studies classify Privacy-Preserving Federated Learning (PPFL) techniques into five main categories: Differential Privacy (DP), Homomorphic Encryption (HE), Secure Multi-Party Computation (SMPC), Trusted Execution Environments (TEE), and Blockchain~\cite{vyas2024}. Although TEEs provide a secure execution environment and Blockchain ensures transparency, they require specialized hardware or complex consensus mechanisms, which are unsuitable for the constrained resources of edge/IoT devices (Manzano et al.). Therefore, this study exclusively focuses on three core statistical and cryptographic software techniques: HE, DP, and SMPC.
+
+\subsubsection*{Trusted Execution Environment (TEE)}
+The Trusted Execution Environment (TEE) provides a completely isolated and secure hardware computing area for processing sensitive data, effectively preserving privacy. However, this technology is heavily dependent on specialized hardware security mechanisms and verifiable components. This strict hardware requirement makes TEE cumbersome and unsuitable for deployment across lightweight IoT networks comprising massively resource-constrained devices~\cite{vyas2024}.
+
+\subsubsection*{Blockchain}
+Blockchain preserves data privacy through decentralized ledgers and cryptographic algorithms that ensure tamper-resistance and eliminate the need for intermediaries. However, this system suffers from fatal performance weaknesses due to low throughput, high latency, and expensive verification costs stemming from continuously growing immutable storage. These severe latency and massive storage overheads make blockchain highly impractical for lightweight, multi-device IoT environments that demand rapid response times~\cite{vyas2024}.
+
+\subsubsection*{Homomorphic Encryption (HE)}
+HE enables computations to be performed directly on encrypted data, ensuring absolute security for model updates from clients before server aggregation without the need for decryption~\cite{nakayiza2026}. However, the computational cost and communication requirements of HE algorithms are extremely immense and heavy, leading to a surge in system latency~\cite{nakayiza2026}. This renders HE less feasible for systems requiring real-time responses and operating under resource constraints, such as IoT-based IDS~\cite{nakayiza2026}.
+
+\subsubsection*{Differential Privacy (DP)}
+Unlike the cumbersomeness of HE, Differential Privacy (DP) offers excellent scalability. The core principle of DP is to mask the contribution of any single data point by adding random noise to the model update at each client~\cite{pedro2022}. DP is exceptionally lightweight, consumes no extra bandwidth, and easily scales to tens of thousands of participating clients~\cite{pedro2022}. The trade-off of this method is that injecting noise into the model inevitably degrades data accuracy, forcing engineers to constantly seek an optimal balance for the privacy budget~\cite{pedro2022}.
+
+\subsubsection*{Secure Multi-Party Computation (SMPC/SecAgg)}
+Conversely, Secure Aggregation (SecAgg) protocols based on SMPC comprehensively resolve the weakness of DP. SMPC prevents the server from directly observing individual client updates by ensuring that the server only receives the aggregated model update~\cite{bessaa2026}. Because it does not introduce noise, the model's accuracy is preserved at a pristine 100\%~\cite{bessaa2026}. As a trade-off, this protocol requires multiple rounds of complex interactions between clients to exchange keys or secret shares, causing severe bandwidth bottlenecks (communication overhead), especially as the number of clients scales up~\cite{bessaa2026}.
+
+\subsubsection*{Hybrid Privacy-Preserving Systems}
+The study by Gutti et al.~\cite{gutti2024} (integrating DP and SecAgg via the HADA algorithm) demonstrates that combining DP (to prevent inference attacks) and SecAgg (to protect the transmission channel) is a promising trajectory. However, stacking these security layers generates immense complexity in computation and hyperparameter tuning~\cite{gutti2024}. Therefore, before advancing to hybrid architectures, independently measuring the performance trade-offs between the DP pipeline and the SecAgg pipeline serves as a mandatory stepping stone to evaluate the endurance of the network system.
+
+\subsection{Data Generation}
+
+\subsubsection{Overview of Data Generation Techniques}
+In the field of cybersecurity and Intrusion Detection Systems (IDS) for the Internet of Things (IoT) environment, Generative AI (GenAI) techniques for data generation are defined as a set of deep learning models capable of learning the underlying probability distribution from actual network traffic datasets, thereby automatically creating synthetic data samples with properties and structures similar to the original data~\cite{deng2025}.
+
+\paragraph{Core problems addressed by data generation techniques:}
+\begin{itemize}
+    \item \textbf{Overcoming Extreme Class Imbalance:} Real-world IoT network traffic consists of over 90--99\% benign traffic, while cyberattack behaviors---especially Low-Rate Stealth Attacks (LRSA) or rare attacks---account for an extremely small percentage. This lack of sample data causes the IDS model to be biased toward the majority class.
+    \item \textbf{Outperforming traditional sampling techniques:} Traditional sampling methods like SMOTE only perform linear interpolation between existing minority data points within a convex hull. In contrast, data generation techniques can learn the overall probability distribution to create completely new feature space regions, covering edge cases and unseen attack variants (zero-day attacks), thereby enhancing the robustness and generalization capability of the model~\cite{deng2025}.
+    \item \textbf{Supporting data augmentation and restructuring:} According to system survey statistics, up to 89\% of studies use GenAI for data augmentation and class balancing, helping to improve the detection performance of IDS without leaking raw data~\cite{deng2025}.
+\end{itemize}
+
+\paragraph{Groups of data generation techniques:}
+\begin{itemize}
+    \item \textbf{Generative Adversarial Networks (GANs):} An architecture consisting of two competing deep learning networks---the Generator learns to generate synthetic data, and the Discriminator learns to distinguish between real and fake data. GANs account for an overwhelming proportion (58\%) in research due to their ability to create highly realistic data~\cite{deng2025}.
+    \item \textbf{Autoencoders and Variational Autoencoders (AEs/VAEs):} An architecture comprising an Encoder network that compresses input data into a latent space and a Decoder network that reconstructs the data. The VAE lineage introduces a continuous probability distribution assumption into the latent space, allowing sampling to generate new data with high stability~\cite{deng2025}.
+    \item \textbf{Transformers Models:} Utilize a self-attention mechanism to learn complex temporal dependencies in network packet data sequences~\cite{deng2025}.
+\end{itemize}
+
+\subsubsection{Analysis of Strengths and Weaknesses of Techniques in Existing Studies}
+Although data generation techniques offer immense potential for IDS in IoT, a critical analysis of recently published works reveals that each method possesses specific weaknesses and strict trade-offs regarding computational cost, training stability, and privacy in a Federated Learning (FL) environment~\cite{deng2025}.
+
+\paragraph{Random Resampling Techniques (Bootstrapping / Oversampling):}
+A study by Jacob and Sultana~\cite{jacob2026} uses Bootstrapping (random resampling with replacement) at local nodes to balance the BoT-IoT and UNB CIC IoT 2018 datasets. The strength is that this technique is extremely simple, consumes no computational resources, and is easy to deploy on IoT devices. However, the weakness is that Bootstrapping merely repeats existing old data rows rather than creating new feature distributions. This makes the model prone to overfitting and causes it to completely fail in detecting new variant attacks or concept drift~\cite{deng2025}.
+
+\paragraph{Cloud-based Centralized Data Generation Techniques (Cloud-based VAE-GAN):}
+Research by Anandhi and Srikanth~\cite{anandhi2026} proposes the SSAIM module using a hybrid VAE-GAN architecture located at the Cloud layer to generate 51,200 low-rate stealth attack (LRSA) samples to supplement the IoTID20 dataset. The strength is that it helps improve the Recall detection rate of LRSA attacks from 62\% to 98\%. However, the weakness is that placing the generative model centrally in the Cloud degrades the decentralized privacy of Federated Learning. Simultaneously, the complex VAE-GAN structure requires model compression (quantization) when sending it back to IoT nodes; the authors' experiments indicate that deep quantization below 6-bit (e.g., 4-bit) causes a severe drop in attack detection sensitivity.
+
+\paragraph{Heavy Generative Denoising Techniques (Tabular Diffusion / Tab-DDPM):}
+A study by Manzano et al.~\cite{manzano2025} integrates the Diffusion model (Tab-DDPM) directly at local nodes in the FL network to generate tabular data for the minority class on the BoT-IoT dataset. The strength is that the quality of the generated synthetic samples is extremely high, achieving superior similarity to the original data. However, the weakness is that the Diffusion model requires an iterative denoising process across hundreds of steps, leading to massive computational costs. Experiments show that a Virtual Machine with 1 CPU and 2GB RAM takes an average of about 32 seconds just to generate a single data sample. This speed is too slow and completely unfeasible for edge IoT devices that require real-time detection.
+
+\paragraph{Pure GANs Networks:}
+According to the survey by Deng et al.~\cite{deng2025}, although GANs generate sharp data, the adversarial training process is highly unstable, frequently encountering mode collapse---where the model repeatedly generates a few duplicated sample patterns, wasting edge node resources. Additionally, applied research of GANs in practice also reveals significant limitations regarding computational performance and the ability to process extremely rare data classes:
+\begin{itemize}
+    \item Research by Yang et al.~\cite{yang2025} uses Improved GAN to supplement training data for DDoS detection IDS. Experiments removing the data augmentation component show a clear drop in performance, proving the contribution of synthetic samples. However, in terms of computational performance and resources, the entire system requires up to 2.726 seconds and 19.6~GB of GPU memory on the KDDcup99 dataset. This is a very high cost stemming from multiple combined components, not just the GAN; furthermore, the paper did not separately report the generator inference time to accurately evaluate the actual computational efficiency of the generator.
+    \item Research by Durga et al.~\cite{durga2026} combines TinyGAN with Federated Learning (FL) to create a lightweight model for IoMT, reporting an accuracy of 99.30\% after 20 training rounds. However, regarding the handling of class imbalance, malware families representing less than 0.5\% of the dataset were completely removed to prevent the GAN training process from becoming unstable. Therefore, the research results do not fully reflect the detection efficiency for extremely rare data classes. Similarly, this study also did not provide separate sample generation time measurements to clearly determine the actual computational advantage of TinyGAN on edge devices.
+\end{itemize}
+
+\subsubsection{Reasons for Using the CVAE (Conditional Variational Autoencoder) Data Generation Technique}
+\begin{itemize}
+    \item \textbf{Proactively controlling the generated class labels (Class-conditioned Generation):} Unlike traditional VAEs, CVAE directly embeds the condition label $c$ into both the Encoding and Decoding processes. This allows the model at the edge node to proactively generate the exact number of samples belonging to the specific rare/minority attack class needed for balancing, without distorting the distribution of other classes.
+    \item \textbf{Thoroughly resolving the limitations of Bootstrapping:} CVAE learns a continuous underlying probability distribution, generating entirely new and diverse data samples rather than repeating old ones, thereby improving the ability to detect variant and zero-day attacks.
+    \item \textbf{Protecting Federated Learning privacy (overcoming the drawbacks of Cloud VAE-GAN):} CVAE is lightweight and can be trained and executed directly at each Local Client node. This ensures that raw data and the data generation process remain entirely at the local edge, strictly complying with the privacy and security principles of FL.
+    \item \textbf{Optimizing resources and Stable Training (overcoming Diffusion and GANs):} CVAE has a lightweight Encoder-Decoder structure, fast inference speed, and significantly lower computational and memory costs compared to Diffusion Models or Transformers, fully meeting the resource constraints of edge IoT devices. Concurrently, optimizing the Evidence Lower Bound (ELBO) function helps CVAE to always converge stably, avoiding the mode collapse phenomenon seen in GANs.
+\end{itemize}
+
+\subsection{Integrating Privacy-Preserving Mechanisms and Generative Models in Federated IoT-IDS}
+
+Sections 2.1.1 and 2.1.2 illustrate that securing Federated Learning (FL) for IoT Intrusion Detection Systems (IDS) requires addressing privacy and data imbalance simultaneously. Privacy-preserving mechanisms protect model updates against inference attacks, but they do not resolve the detection degradation caused by highly imbalanced, Non-IID network traffic. Distributed generative models can synthesize minority attack classes to balance these datasets, yet they introduce new vulnerabilities. Generative architectures often memorize training data, which risks exposing sensitive local network behaviors during the decentralized training process~\cite{cunhaneto2023}. Deploying generative models in FL-IDS requires privacy safeguards that protect model weights without severely reducing the fidelity of the synthesized traffic.
+
+Recent studies have proposed unified frameworks that combine data generation with privacy protection, generally falling into two categories: cryptographic methods and statistical perturbation. On the cryptographic side, Yao et al.~\cite{yao2024} developed a Conditional Loss-Sensitive GAN (CLS-GAN) for traffic synthesis that relies on dynamic threshold secret sharing to protect model transmissions. He et al.~\cite{he2023} integrated blockchain-empowered authorization with CGANs. Most other approaches rely on Differential Privacy (DP). For instance, Hamouda et al.~\cite{hamouda2024} coupled a distributed conditional GAN with DP for Industrial IoT, while Salim et al.~\cite{salim2025} deployed local Variational Autoencoders (VAEs) on satellite edge nodes masked by DP. Other works extend this by applying DP to Federated Variational Bayesian Gaussian Mixture Models~\cite{duan2023} or combining it with foundation-model knowledge distillation~\cite{jiao2025} and LLM-driven network emulation~\cite{shettar2026}.
+
+While these frameworks integrate privacy into generative FL-IDS, we observe a strict tradeoff between statistical utility and system overhead in resource-constrained IoT environments. Cryptographic methods like secret sharing~\cite{yao2024} and blockchain~\cite{he2023} maintain exact model integrity but impose high communication and computational burdens, making them difficult to scale on edge devices. DP offers computational efficiency~\cite{hamouda2024, salim2025, duan2023, jiao2025, shettar2026}, but injecting calibrated noise into gradients degrades the representational fidelity of the synthetic data, which lowers downstream IDS accuracy.
+
+Current literature presents a trade-off between generative utility and computational practicality. Specifically, there is a lack of empirical research quantitatively comparing perturbation-based methods (DP) and cryptographic protocols (such as Secure Aggregation) within federated generative frameworks operating under constrained IoT-MQTT environments. To address this gap, our study evaluates these approaches to establish practical deployment boundaries. We aim to identify an optimal balance between cryptographic security, synthetic data quality, and system overhead for edge-based IDS.
+
 \section{Summary of the Literature Review}
 \section{Contribution of Research}
+
+
