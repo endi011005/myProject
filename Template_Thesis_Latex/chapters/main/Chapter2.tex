@@ -74,15 +74,79 @@ According to the survey by Deng et al.~\cite{deng2025}, although GANs generate s
 
 \subsection{Integrating Privacy-Preserving Mechanisms and Generative Models in Federated IoT-IDS}
 
-Sections 2.1.1 and 2.1.2 illustrate that securing Federated Learning (FL) for IoT Intrusion Detection Systems (IDS) requires addressing privacy and data imbalance simultaneously. Privacy-preserving mechanisms protect model updates against inference attacks, but they do not resolve the detection degradation caused by highly imbalanced, Non-IID network traffic. Distributed generative models can synthesize minority attack classes to balance these datasets, yet they introduce new vulnerabilities. Generative architectures often memorize training data, which risks exposing sensitive local network behaviors during the decentralized training process~\cite{cunhaneto2023}. Deploying generative models in FL-IDS requires privacy safeguards that protect model weights without severely reducing the fidelity of the synthesized traffic.
+Sections 2.1.1 and 2.1.2 address complementary but partly conflicting requirements. Privacy-preserving mechanisms protect client updates against gradient inversion and membership inference, but they do not mitigate the severe class imbalance caused by non-IID edge traffic. Augmenting minority attack classes with distributed generative models alleviates this imbalance, yet introduces a further risk: generative models may memorize their training data, so that generated traffic profiles or shared parameters can expose sensitive telemetry~\cite{cunhaneto2023}. A federated generative IDS therefore requires privacy protection for local parameters that preserves the utility of the synthetic data.
 
-Recent studies have proposed unified frameworks that combine data generation with privacy protection, generally falling into two categories: cryptographic methods and statistical perturbation. On the cryptographic side, Yao et al.~\cite{yao2024} developed a Conditional Loss-Sensitive GAN (CLS-GAN) for traffic synthesis that relies on dynamic threshold secret sharing to protect model transmissions. He et al.~\cite{he2023} integrated blockchain-empowered authorization with CGANs. Most other approaches rely on Differential Privacy (DP). For instance, Hamouda et al.~\cite{hamouda2024} coupled a distributed conditional GAN with DP for Industrial IoT, while Salim et al.~\cite{salim2025} deployed local Variational Autoencoders (VAEs) on satellite edge nodes masked by DP. Other works extend this by applying DP to Federated Variational Bayesian Gaussian Mixture Models~\cite{duan2023} or combining it with foundation-model knowledge distillation~\cite{jiao2025} and LLM-driven network emulation~\cite{shettar2026}.
+Existing approaches fall into two groups: cryptographic protocols and Differential Privacy (DP). Cryptographic methods retain exact parameter values. Yao et al.~\cite{yao2024} applied dynamic threshold secret sharing to secure downlink transmissions in a CLS-GAN framework, while He et al.~\cite{he2023} employed blockchain smart contracts to manage trust among participants contributing CGAN updates. Both incur communication and computation overhead that is difficult to sustain on resource-constrained IoT nodes.
 
-While these frameworks integrate privacy into generative FL-IDS, we observe a strict tradeoff between statistical utility and system overhead in resource-constrained IoT environments. Cryptographic methods like secret sharing~\cite{yao2024} and blockchain~\cite{he2023} maintain exact model integrity but impose high communication and computational burdens, making them difficult to scale on edge devices. DP offers computational efficiency~\cite{hamouda2024, salim2025, duan2023, jiao2025, shettar2026}, but injecting calibrated noise into gradients degrades the representational fidelity of the synthetic data, which lowers downstream IDS accuracy.
+DP avoids this overhead by adding calibrated noise to gradients or latent representations, and it is the more widely adopted option in generative FL. It has been applied to conditional GANs for industrial IoT~\cite{hamouda2024}, Variational Autoencoders (VAEs) for satellite links~\cite{salim2025}, and federated mixture models for tabular data~\cite{duan2023}; more recent designs combine DP-based generation with foundation model distillation~\cite{jiao2025} or containerized network emulation~\cite{shettar2026}. However, the injected noise degrades fine-grained packet characteristics and can reduce downstream detection accuracy. This degradation is expected to be most pronounced for lightweight telemetry protocols such as MQTT, where attack signatures overlap with benign traffic.
 
-Current literature presents a trade-off between generative utility and computational practicality. Specifically, there is a lack of empirical research quantitatively comparing perturbation-based methods (DP) and cryptographic protocols (such as Secure Aggregation) within federated generative frameworks operating under constrained IoT-MQTT environments. To address this gap, our study evaluates these approaches to establish practical deployment boundaries. We aim to identify an optimal balance between cryptographic security, synthetic data quality, and system overhead for edge-based IDS.
+The two families have thus far been evaluated separately. To the best of our knowledge, no prior work compares perturbation-based protection (DP) with cryptographic protection (e.g., Secure Aggregation) for federated generative models in constrained IoT-MQTT settings. This study addresses that gap by empirically evaluating both defenses within a federated IDS. It quantifies the trade-offs among cryptographic overhead, synthetic sample fidelity, and IDS detection performance, and provides benchmarks for federated MQTT intrusion detection at the edge.
 
-\section{Summary of the Literature Review}
-\section{Contribution of Research}
+\clearpage
+\section{Summary of the Literature Review}\label{sec:lit_summary}
 
-
+The reviewed literature establishes federated learning as a promising approach to IoT intrusion detection while identifying persistent limitations in data representation, privacy protection, and empirical evaluation. As summarized in Table~\ref{tab:literature_comparison}, several studies address non-IID data distributions or incorporate data augmentation, but these features alone do not demonstrate effective detection of underrepresented attack classes. Class imbalance and inter-client heterogeneity therefore remain central concerns, motivating class-conditioned local generation whose contribution must be verified through controlled experiments.
+
+\begin{table}[H]
+\centering
+\caption{Unified comparison of the reviewed studies}
+\label{tab:literature_comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Reference} & \textbf{FL} & \textbf{IoT Dataset} & \textbf{Non-IID} & \textbf{Data Synthesis} & \textbf{DP} & \textbf{SMPC} & \textbf{\makecell{DP vs. SecAgg\\Trade-off Analysis}} \\
+\midrule
+Nakayiza et al.      & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$     & $\checkmark$ & $\times$ \\
+Pedro et al.         & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Bessaa et al.        & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$     & $\checkmark$ & $\times$ \\
+Gutti et al.         & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$ \\
+He et al.            & $\checkmark$ & $\times$     & $\times$     & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Jiao et al.          & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Yao et al.           & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$ \\
+Salim et al.         & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Hamouda et al.       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Shettar et al.       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Duan et al.          & $\checkmark$ & $\times$     & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$ \\
+Yang et al.          & $\times$     & $\times$     & $\times$     & $\checkmark$ & $\times$     & $\times$     & $\times$ \\
+Durga et al.         & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$     & $\times$ \\
+Nguyen et al.        & $\checkmark$ & $\times$     & $\times$     & $\checkmark$ & $\times$     & $\times$     & $\times$ \\
+Manzano et al.       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\times$     & $\times$     & $\times$ \\
+Anandhi \& Srikanth  & $\checkmark$ & $\checkmark$ & $\times$     & $\checkmark$ & $\times$     & $\times$     & $\times$ \\
+Jacob \& Sultana     & $\checkmark$ & $\checkmark$ & $\times$     & $\times$     & $\times$     & $\times$     & $\times$ \\
+\midrule
+\textbf{Ours}        & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ & $\mathbf{\checkmark}$ \\
+\bottomrule
+\end{tabular}%
+}
+\begin{flushleft}
+\footnotesize Note: $\checkmark$: included; $\times$: not indicated in the supplied comparison.
+\end{flushleft}
+\end{table}
+
+The comparison also shows that privacy protection and data generation have already been combined in several frameworks. The remaining gap is consequently not their complete absence, but the limited joint assessment of generative utility, privacy guarantees, and deployment costs within a common pipeline. Although some studies include both DP and SMPC, this integration does not, by itself, establish the relative effects of DP and SecAgg under comparable experimental conditions.
+
+Within the studies classified in Table~\ref{tab:literature_comparison}, none is marked as providing an explicit DP-versus-SecAgg trade-off analysis. This observation motivates an evaluation using a common IoT dataset, non-IID partitions, and threat model, while distinguishing the protection objectives of the two mechanisms. The proposed research addresses these limitations through client-side CVAE augmentation, integration of DPSGD and SecAgg+, and assessment across five dimensions: IDS utility, synthetic-data fidelity, privacy, operational overhead, and statistical rigor.
+
+\section{Contribution of Research}\label{sec:contributions}
+
+To address the limitations identified in Section~\ref{sec:lit_summary}, this research makes the following contributions:
+
+\subsubsection*{G1. A class-conditioned generative architecture for imbalanced non-IID IoT data}
+The research proposes FL-IDS-IoT-CVAE, an architecture that uses client-side CVAEs to generate attack samples conditioned on class labels and augment local IDS training data. Unlike a conventional unconditional VAE, the CVAE enables targeted generation for selected minority classes. Its variational training objective also avoids the adversarial optimization required by GANs, motivating its evaluation as a practical option for constrained clients. These design choices are tested through ablation studies that remove synthetic augmentation or class conditioning, supplemented by comparisons with VAE- and GAN-based alternatives under matched data partitions and comparable experimental budgets. The evaluation examines minority-class detection, synthetic-data fidelity, training variability, and generation cost rather than presuming CVAE superiority.
+
+\subsubsection*{G2. Integration of DPSGD and SecAgg+ into a common generative pipeline}
+The framework integrates Differentially Private Stochastic Gradient Descent (DPSGD), evaluated through an explicit $(\epsilon, \delta)$ privacy budget, and SecAgg+ as configurable privacy mechanisms within the same federated generative pipeline. The DPSGD configuration specifies per-example gradient clipping, calibrated Gaussian noise addition, and privacy accounting across training rounds, while SecAgg+ protects individual client updates during aggregation. Raw traffic remains local, and the methodology defines the protected unit and information released at each stage. This common implementation enables separate assessment of the mechanisms while recognizing that statistical privacy and secure aggregation provide different forms of protection.
+
+\subsubsection*{G3. A controlled five-dimensional analysis of the DP--SecAgg trade-off}
+The research evaluates DP and SecAgg+, the selected SecAgg protocol, using the same dataset, non-IID partitions, generative architecture, downstream IDS, and threat model. The threat model specifies adversary capabilities, observable outputs, collusion assumptions, and client-dropout conditions; protection guarantees are interpreted separately for each mechanism. Evaluation is organized into five groups:
+\begin{enumerate}
+    \item \textbf{IDS Utility Metrics:} macro-F1, per-class precision and recall, minority-attack recall, and false-positive rate, evaluated on held-out real traffic.
+    \item \textbf{Fidelity Metrics:} class-wise distributional similarity, preservation of feature dependencies, sample diversity, and validity of generated traffic features.
+    \item \textbf{Privacy Metrics:} the cumulative $(\epsilon, \delta)$ budget for DP, empirical inference-attack performance where applicable, and SecAgg+ protection conditions concerning aggregation visibility, collusion, and dropout. A numerical DP budget is not assigned to SecAgg+ alone.
+    \item \textbf{Overhead Metrics:} training time, generation time per sample or batch, peak memory usage, communication volume, and protocol-induced aggregation latency under specified hardware and network conditions.
+    \item \textbf{Statistical Rigor:} repeated runs with multiple random seeds, confidence intervals, effect sizes, and appropriate paired significance tests, with adjustment for multiple comparisons when required.
+\end{enumerate}
+
+Together, these contributions establish a reproducible basis for determining when privacy protection and synthetic augmentation yield useful detection gains at an acceptable operational cost.
+
+
